@@ -24,9 +24,12 @@ module.exports = appInfo => {
     // load into agent, default is close
     agent: false,
   };
-  config.middleware = ['errorHandler'];
+  config.middleware = ['errorHandler', 'sqlInjection'];
   config.errorHandler = {
     // 非 `/api/` 路径不在这里做错误处理，留给默认的 onerror 插件统一处理
+    match: '/api',
+  };
+  config.sqlInjection = {
     match: '/api',
   };
   return config;

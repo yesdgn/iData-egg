@@ -21,6 +21,7 @@ module.exports = {
         'e1009': { 'returnCode': 0, 'returnDescribe': '数据没有改变,不需要保存', items: [{ 'result': 'success', 'resultDescribe': '数据没有改变,不需要保存' }] },
         'e1010': { 'returnCode': 1010, 'result': 'fail', 'returnDescribe': 'sign未传入' },   
         'e1011': { 'returnCode': 1011, 'result': 'fail', 'returnDescribe': 'API调用需要验证角色权限,但未配置。' },    
+        'e1012': { 'returnCode': 1012, 'result': 'fail', 'returnDescribe': 'userid未传入' },   
 },
     'upload': {
         'e5000': { 'returnCode': 5000, 'result': 'fail', 'returnDescribe': '不支持的文件格式' },

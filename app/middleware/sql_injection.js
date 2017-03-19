@@ -5,6 +5,7 @@ module.exports = (options, app) => {
         const body = this.body;
         const query = this.query;
         let params = body ? body : query;
-  console.log(params);
+        this.dgnReqParams=this.helper.replaceJsonParam(params);
+        yield next;
     };
 };

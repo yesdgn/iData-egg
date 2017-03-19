@@ -10,7 +10,7 @@ module.exports = {
         if (lodash.isNull(obj)) return true;
         if (lodash.isString(obj) && obj === '') return true;
         if (lodash.isArray(obj) && obj.length === 0) return true;
-        if (lodash.isPlainObject(obj) && size(obj) <= 0) return true;
+        if (lodash.isPlainObject(obj) && lodash.size(obj) <= 0) return true;
         if (lodash.isNaN(obj)) return true;
         if (lodash.isNil(obj)) return true;
         return false;
@@ -67,10 +67,17 @@ module.exports = {
         if (this.ctx.helper.ifNull(reqParam))
             return '';
         if (!lodash.isString(reqParam)) { return reqParam; }
-        let Param = reqParam.replace(/["\\]/gi, function (txt, key) {
+        let Param = reqParam.replace(/['"\\]/gi, function (txt, key) {
             return '\\' + txt;
         })
         return Param;
     },
-
+    replaceJsonParam(reqJsonParams) {
+        // if (this.ctx.helper.ifNull(reqJsonParams))
+        //     return {};
+        let Params = lodash.mapValues(reqJsonParams, function (value, key) {
+            return this.ctx.helper.replaceParam(value);
+        }.bind(this));
+        return Params;
+    },
 };
