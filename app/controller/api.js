@@ -39,9 +39,8 @@ module.exports = app => {
             { throw new Error(JSON.stringify(returnInfo.api.e1004));}
            // this.logger.debug('current AccessToken: %j', AccessToken[0].AccessToken);
             if (routerApi.IsAllowRoleRight==1)
-            {   if (!routerApi.ApiExecConditionSql)
-                {throw new Error(JSON.stringify(returnInfo.api.e1011));}
-                 await this.ctx.service.api.authRolePermission(routerApi.ApiExecConditionSql);
+            {   
+                 await this.ctx.service.api.authRolePermission(routerApi);
             }
 
         }

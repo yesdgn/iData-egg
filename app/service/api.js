@@ -1,6 +1,6 @@
 'use strict';
 const co = require('co');
-
+const lodash = require('lodash');
 module.exports = app => {
     app.mysql.query = co.wrap(app.mysql.query);
     //SQL语句有参数必须使用replaceParam替换掉“和\ ，并且SQL以‘’起始和结尾。
@@ -14,9 +14,17 @@ module.exports = app => {
             let results = await app.mysql.query('select  AccessToken  from dgn_access_token where   AccessToken="' + sessionkeyParam + '"  and now()<=ExpireTime');
             return results;
         }
-        async authRolePermission(sessionkey) {
-            let sessionkeyParam = this.ctx.helper.replaceParam(sessionkey)
-            let results = await app.mysql.query('select  AccessToken  from dgn_access_token where   AccessToken="' + sessionkeyParam + '"  and now()<=ExpireTime');
+        async authRolePermission(routerApi) {
+            let sqlstr = routerApi.ApiExecSql;
+            let ConditionSql = lodash.trim(routerApi.ApiExecConditionSql);
+            let apiRightSql = ' select "您没有权限执行此操作"  as ErrorMessage from dgn_router_api m where IsValid=0  and apiid= ' + routerApi.ApiID + ' and  not exists  (select 1 from dgn_role_user a	 inner join dgn_role_rights b on a.RoleID=b.RoleID	  where a.UserID=' + args.userid + ' and 	b.dataid=m.RouteID )';
+            if (ConditionSql && ConditionSql != '') {
+                ConditionSql = apiRightSql + ' union all ' + ConditionSql;
+            }
+            else {
+                ConditionSql = apiRightSql;
+            }
+            let results = await app.mysql.query(ConditionSql);
             return results;
         }
         getRouterArr(results) {
