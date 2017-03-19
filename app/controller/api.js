@@ -59,12 +59,13 @@ module.exports = app => {
             {
                 let sqls = this.generateListSqlStr(this.ctx.dgnReqParams, routerApi.ApiExecSql);
                 if (sqls === null) { throw new Error(JSON.stringify(returnInfo.api.e1007)); }
+                sqls=this.ctx.helper.queryFormat(sqls,this.ctx.dgnReqParams);
                 const results = await this.ctx.service.api.dbExecSql(sqls);
                 return results;
             }
             else if (routerApi.ApiType == 'FORM_READ' || routerApi.ApiType == 'FORM_LIST_EXPORT' || routerApi.ApiType == 'FORM_DELETE')   // 单据读取语句
-            {
-                const results = await this.ctx.service.api.dbExecSql(routerApi.ApiExecSql);
+            {   let sqls=this.ctx.helper.queryFormat(routerApi.ApiExecSql,this.ctx.dgnReqParams);
+                const results = await this.ctx.service.api.dbExecSql(sqls);
                 return results;
             }
             else if (routerApi.ApiType == 'FORM_SAVE')   //自动生成单据保存语句
@@ -72,11 +73,13 @@ module.exports = app => {
                 let sqls = this.generateSaveSqlStr(this.ctx.dgnReqParams, routerApi.AutoGenerateSqlTableName);
                 if (sqls === null) { throw new Error(JSON.stringify(returnInfo.api.e1007)); }
                 if (sqls === '') { throw new Error(JSON.stringify(returnInfo.api.e1009)); }
+                sqls=this.ctx.helper.queryFormat(sqls,this.ctx.dgnReqParams);
                 const results = await this.ctx.service.api.dbExecSql(sqls);
                 return results;
             }
             else {
-                const results = await this.ctx.service.api.dbExecSql(routerApi.ApiExecSql);
+                let sqls=this.ctx.helper.queryFormat(routerApi.ApiExecSql,this.ctx.dgnReqParams);
+                const results = await this.ctx.service.api.dbExecSql(sqls);
                 return results;
             }
         }

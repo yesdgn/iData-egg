@@ -80,4 +80,30 @@ module.exports = {
         }.bind(this));
         return Params;
     },
+    queryFormat(query, values) {
+        if (!values) return query;
+        var sqlreplace = query.replace(/\{\$req[n]?.(.*?)\}/gi, function (txt, key) {
+            let keyitem = key.split('.');
+            if (keyitem.length > 1)   //SQL中有类似于{$req.filter.goodname} 这样形式的变量。 filter为传入的参数名，goodsname为filter参数中的项目 要求filter是{}
+            {
+                if (Object.prototype.hasOwnProperty.call(values, keyitem[0]) && !this.ctx.helper.ifNull(values[keyitem[0]])) {
+                    let keyjson = JSON.parse(values[keyitem[0]]);
+                    return (keyjson[keyitem[1]] ? keyjson[keyitem[1]] : '');
+                }
+                else
+                { return ''; }
+            }
+
+            if (Object.prototype.hasOwnProperty.call(values, key)) {
+                if (txt.substr(0, 6) === '{$reqn' && values[key] == '')    // 当变量为{$reqn.}时， 参数值为''就替换为null 方便数据库像数字列无法插入''
+                { return null; }
+                else {
+                    return  values[key] ;
+                }
+            }
+            return txt;
+        }.bind(this));
+        console.log(sqlreplace);
+        return sqlreplace
+    },
 };
