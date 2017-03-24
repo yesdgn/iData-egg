@@ -13,12 +13,19 @@ module.exports = app => {
             await this.Authentication();
             const results = await this.dbExec();
             const resultsJson = this.transformJson(routerApi.ApiType, results, this.ctx.dgnReqParams);
+            //设置跨域访问
+            this.ctx.set("Access-Control-Allow-Origin", "*");
+            this.ctx.set("Access-Control-Allow-Headers", "X-Requested-With");
+            this.ctx.set("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+            this.ctx.set("X-Powered-By", 'iData 1.0.0')
+            this.ctx.set("Content-Type", "application/json;charset=utf-8");
             if (routerApi.ApiType == 'FORM_LIST_EXPORT') {
-               // excel.exportExcel(req, res, args, resultsJson);
-               console.log('导出excel');
+                // excel.exportExcel(req, res, args, resultsJson);
+                console.log('导出excel');
             }
-            else
-            { this.ctx.body = resultsJson; }
+            else {
+                this.ctx.body = resultsJson;
+            }
         }
 
         //普通检测
@@ -39,12 +46,12 @@ module.exports = app => {
             if (!userid) { throw new Error(JSON.stringify(returnInfo.api.e1012)); }
             let sign = this.ctx.dgnReqParams['sign'];
             if (!sign) { throw new Error(JSON.stringify(returnInfo.api.e1010)); }
-            // if ((this.ctx.method == 'GET' && !this.ctx.helper.checkUrl(this.ctx.query)) || (this.ctx.method == 'POST' && !this.ctx.helper.checkUrl(this.ctx.body)))
-            // { throw new Error(JSON.stringify(returnInfo.api.e1005)); }
-            // const AccessToken = await this.ctx.service.api.authSessionkey(this.ctx.dgnReqParams);
-            // if (AccessToken.length!==1 || AccessToken[0].AccessToken!== sessionkey )
-            // { throw new Error(JSON.stringify(returnInfo.api.e1004));}
-            // this.ctx.logger.debug('current AccessToken: %j', AccessToken[0].AccessToken);
+            if ((this.ctx.method == 'GET' && !this.ctx.helper.checkUrl(this.ctx.query)) || (this.ctx.method == 'POST' && !this.ctx.helper.checkUrl(this.ctx.request.body)))
+            { throw new Error(JSON.stringify(returnInfo.api.e1005)); }
+            const AccessToken = await this.ctx.service.api.authSessionkey(this.ctx.dgnReqParams);
+            if (AccessToken.length !== 1 || AccessToken[0].AccessToken !== sessionkey)
+            { throw new Error(JSON.stringify(returnInfo.api.e1004)); }
+         //   this.ctx.logger.debug('current AccessToken: %j', AccessToken[0].AccessToken);
             if (routerApi.IsAllowRoleRight == 1) {
                 const results = await this.ctx.service.api.authRolePermission(routerApi, this.ctx.dgnReqParams);
                 if (results.length > 0) {
@@ -59,12 +66,13 @@ module.exports = app => {
             {
                 let sqls = this.generateListSqlStr(this.ctx.dgnReqParams, routerApi.ApiExecSql);
                 if (sqls === null) { throw new Error(JSON.stringify(returnInfo.api.e1007)); }
-                sqls=this.ctx.helper.queryFormat(sqls,this.ctx.dgnReqParams);
+                sqls = this.ctx.helper.queryFormat(sqls, this.ctx.dgnReqParams);
                 const results = await this.ctx.service.api.dbExecSql(sqls);
                 return results;
             }
             else if (routerApi.ApiType == 'FORM_READ' || routerApi.ApiType == 'FORM_LIST_EXPORT' || routerApi.ApiType == 'FORM_DELETE')   // 单据读取语句
-            {   let sqls=this.ctx.helper.queryFormat(routerApi.ApiExecSql,this.ctx.dgnReqParams);
+            {
+                let sqls = this.ctx.helper.queryFormat(routerApi.ApiExecSql, this.ctx.dgnReqParams);
                 const results = await this.ctx.service.api.dbExecSql(sqls);
                 return results;
             }
@@ -73,36 +81,36 @@ module.exports = app => {
                 let sqls = this.generateSaveSqlStr(this.ctx.dgnReqParams, routerApi.AutoGenerateSqlTableName);
                 if (sqls === null) { throw new Error(JSON.stringify(returnInfo.api.e1007)); }
                 if (sqls === '') { throw new Error(JSON.stringify(returnInfo.api.e1009)); }
-                sqls=this.ctx.helper.queryFormat(sqls,this.ctx.dgnReqParams);
+                sqls = this.ctx.helper.queryFormat(sqls, this.ctx.dgnReqParams);
                 const results = await this.ctx.service.api.dbExecSql(sqls);
                 return results;
             }
             else {
-                let sqls=this.ctx.helper.queryFormat(routerApi.ApiExecSql,this.ctx.dgnReqParams);
+                let sqls = this.ctx.helper.queryFormat(routerApi.ApiExecSql, this.ctx.dgnReqParams);
                 const results = await this.ctx.service.api.dbExecSql(sqls);
                 return results;
             }
         }
         //动态生成保存SQL
         generateSaveSqlStr(args, tableNameStr) {
-            var tablenameArr = tableNameStr.split(",");
-            var jsonData = JSON.parse(args.jsonData);
-            var sql = '';
-            var abort = false;
-            tablenameArr.map(function (tablename, tableIndex) {
-                var jsonTableData = [];
+            const tablenameArr = tableNameStr.split(",");
+            const jsonData = JSON.parse(args.jsonData);
+            let sql = '';
+            let abort = false;
+            tablenameArr.map( (tablename, tableIndex)=> {
+                let jsonTableData = [];
                 if (abort) { return; }
                 if (jsonData[tableIndex] == undefined)
                 { return sql }
                 else if (lodash.isArray(jsonData[tableIndex]))
                 { jsonTableData = jsonData[tableIndex]; }
                 else { jsonTableData.push(jsonData[tableIndex]); }   //不是数组则认为是对象，转换为数组 方便统一处理
-                jsonTableData.map(function (row) {
+                jsonTableData.map(  (row)=> {
                     if (abort) { return; }
-                    var field = '';
-                    for (var col in row) {
+                    let field = '';
+                    for (let col in row) {
                         if (col != 'ID' && col != 'DgnOperatorType') {
-                            let colvalue = dgn.replacestr(row[col]);
+                            let colvalue = this.ctx.helper.replaceParam(row[col]);
                             if (colvalue === true)
                             { colvalue = 1; }
                             else if (colvalue === false)
@@ -111,11 +119,11 @@ module.exports = app => {
                             field = field + (field == '' ? '`' : ',`') + col + '`=' + colvalue;
                         }
                     }
-                    var dataID = row.ID;
+                    let dataID = row.ID;
                     // 只允许数字与undefined(新增只能是undefined) 如果非数字有可能是SQL注入行为
                     if (isNaN(dataID) && dataID !== undefined)
                     { abort = true; return; }
-                    if (dgn.ifNull(row.ID) && row.DgnOperatorType == 'ADD') {
+                    if (this.ctx.helper.ifNull(row.ID) && row.DgnOperatorType == 'ADD') {
                         sql = sql + ' insert into ' + tablename + ' set ' + field + ';';
                     }
                     else if (row.ID && row.DgnOperatorType == 'UPDATE') {
@@ -133,11 +141,11 @@ module.exports = app => {
         }
         //动态生成列表SQL
         generateListSqlStr(args, sqlArrs) {
-            var sqlArray = sqlArrs.split(";");
-            var pageSize = args.pageSize ? args.pageSize : 10;
-            var curPage = args.curPage ? args.curPage : 1;
-            var sql = '';
-            var abort = false;
+            const sqlArray = sqlArrs.split(";");
+            const pageSize = args.pageSize ? args.pageSize : 10;
+            const curPage = args.curPage ? args.curPage : 1;
+            let sql = '';
+            let abort = false;
             sqlArray.map(function (sqlStr, index) {
                 if (lodash.trim(sqlStr) != '') {
                     if (abort) { return; }
@@ -150,7 +158,7 @@ module.exports = app => {
         }
         //转换SQL返回的结果集
         transformJson(ApiType, results, args) {
-            var resultsJsonObject = { "returnCode": 0 };
+            let resultsJsonObject = { "returnCode": 0 };
             if (ApiType == 'SQL') {
                 resultsJsonObject.items = results;
                 return resultsJsonObject;
@@ -158,7 +166,7 @@ module.exports = app => {
             else if (ApiType == 'FORM_LIST_READ')  //  读列表SQL语句  固定会有两条SQL语句（第一条为列表总记录数）
             {
                 resultsJsonObject.items = {};
-                for (var i = 0; i < results.length; i++) {
+                for (let i = 0; i < results.length; i++) {
                     resultsJsonObject.items['item' + i] = results[i];
                 }
                 return resultsJsonObject;
@@ -168,7 +176,7 @@ module.exports = app => {
                 resultsJsonObject.items = {};
                 if (lodash.isArray(results[0])) //有两条SQL语句返回与一条SQL语句返回不一样 所以要判断一下
                 {
-                    for (var i = 0; i < results.length; i++) {
+                    for (let i = 0; i < results.length; i++) {
                         resultsJsonObject.items['item' + i] = results[i];
                     }
                 }
@@ -197,7 +205,7 @@ module.exports = app => {
             else if (ApiType == 'PROC_M') // 有多个查询返回对象
             {
                 resultsJsonObject.items = {};
-                for (var i = 0; i < results.length - 1; i++) {
+                for (let i = 0; i < results.length - 1; i++) {
                     //var item={};
                     //item['item'+i]=results[i];
                     resultsJsonObject.items['item' + i] = results[i];
@@ -212,13 +220,13 @@ module.exports = app => {
             }
             else if (ApiType == 'TREE')  // 返回树对象
             {
-                var treeJson = {};
-                var result;
+                let treeJson = {};
+                let result;
                 if (results.length === 2 && results[1].serverStatus)
                 { result = results[0]; }
                 else
                 { result = results; }
-                buildTreeJson(result, args.rootValue, treeJson, args.nodeColName, args.parentNodeColName);
+                this.buildTreeJson(result, args.rootValue, treeJson, args.nodeColName, args.parentNodeColName);
                 resultsJsonObject.items = treeJson.children || [];
                 return resultsJsonObject;
             }
@@ -227,15 +235,15 @@ module.exports = app => {
         }
         //构建Tree的Json结构
         buildTreeJson(results, rootValue, parentObject, nodeColName, parentNodeColName) {
-            var childItem = results.filter((x, index) => {
+            let childItem = results.filter((x, index) => {
                 return (x[parentNodeColName] == rootValue)
             })
             if (childItem.length > 0) {
                 parentObject['children'] = childItem;
             }
 
-            for (y in childItem) {
-                buildTreeJson(results, childItem[y][nodeColName], parentObject.children[y], nodeColName, parentNodeColName);
+            for (let y in childItem) {
+                this.buildTreeJson(results, childItem[y][nodeColName], parentObject.children[y], nodeColName, parentNodeColName);
             }
             return;
         }

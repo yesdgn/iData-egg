@@ -18,6 +18,10 @@ module.exports = appInfo => {
       password: 'wildsoul',
       // database
       database: 'dgn_db',
+      supportBigNumbers: true,
+      bigNumberStrings: true,
+      dateStrings: true,
+      multipleStatements: true,
     },
     // load into app, default is open
     app: true,
@@ -32,6 +36,15 @@ module.exports = appInfo => {
   config.sqlInjection = {
     match: '/api',
   };
+  config.security = {
+    csrf: {
+      enable: false,
+    },
+  };
+  config.bodyParser = {
+    jsonLimit: '50m',
+  };
+
   return config;
 };
 

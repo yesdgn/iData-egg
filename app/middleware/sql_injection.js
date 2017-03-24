@@ -2,10 +2,11 @@
 
 module.exports = (options, app) => {
     return function* sqlInjection(next) {
-        const body = this.body;
+        const body = this.request.body;
         const query = this.query;
-        let params = body ? body : query;
-        this.dgnReqParams=this.helper.replaceJsonParam(params);
+        let params = this.helper.ifNull(body) ? query : body;
+        //this.dgnReqParams = this.helper.replaceJsonParam(params);
+        this.dgnReqParams = params;
         yield next;
     };
 };
