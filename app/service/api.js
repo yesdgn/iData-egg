@@ -4,7 +4,7 @@ const lodash = require('lodash');
 module.exports = app => {
     app.mysql.query = co.wrap(app.mysql.query);
     //SQL语句有参数必须使用replaceParam替换掉“和\ ，并且SQL以‘’起始和结尾。
-    return class Api extends app.Service {
+    return class ApiService extends app.Service {
         async getRouterArrConfig() {
             const results = await app.mysql.query('select RouteName,ApiExecSql,ApiExecConditionSql,IsOpen,ApiID,ApiType,AutoGenerateSqlTableName,IsAllowRoleRight from dgn_router_api where IsValid=1 and IsDelete=0;');
             app.routerArr = lodash.keyBy(results, 'ApiID');
