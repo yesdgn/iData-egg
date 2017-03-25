@@ -40,8 +40,8 @@ module.exports = appInfo => {
             },
         },
         "iData": {
-            exportsPath: './app/public/exports/',
-            downloadPath: 'public/exports/',
+            exportsPath: './app/public/exports',
+            downloadPath: 'public/exports',
         }
 
     };
