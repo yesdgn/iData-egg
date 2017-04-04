@@ -107,4 +107,28 @@ module.exports = {
         console.log(sqlreplace);
         return sqlreplace;
     },
+    getRand(randlen){
+    let n=lodash.now().toString()+this.ctx.helper.generateMixedNum(randlen);
+    return  n;
+    },
+    generateMixedNum(randlen) {
+        const chars = ['0','1','2','3','4','5','6','7','8','9'];
+        let res = "";
+        for(let i = 0; i < randlen ; i ++) {
+            let id = Math.ceil(Math.random()*9);
+            res += chars[id];
+        }
+        return res;
+    },
+    generateUUID() {
+    let d = new Date().getTime();
+    let str='xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'  //'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+    let uuid = str.replace(/[xy]/g, function(c) {
+    let r = (d + Math.random()*16)%16 | 0;
+    d = Math.floor(d/16);
+    return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+    }
+
 };

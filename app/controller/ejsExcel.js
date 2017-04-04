@@ -1,5 +1,5 @@
 'use strict';
-const returnInfo = require('./returnInfo.js');
+const returnInfo = require('../returnInfo.js');
 module.exports = app => {
     class EjsExcel extends app.Controller {
         async  exportExcel() {

@@ -38,4 +38,7 @@ module.exports = {
     'other': {
         'e7000': { 'returnCode': 7001, 'result': 'fail', 'returnDescribe': '未知错误' },
     },
+    'login':{
+        'e8000': { 'returnCode': 8000, 'result': 'fail', 'returnDescribe': '账号已注册' },
+    }
 };

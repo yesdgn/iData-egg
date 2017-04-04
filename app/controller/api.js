@@ -1,6 +1,6 @@
 'use strict';
 
-const returnInfo = require('./returnInfo.js');
+const returnInfo = require('../returnInfo.js');
 const lodash = require('lodash');
 let routerApi = {};
 
