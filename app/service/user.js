@@ -22,7 +22,7 @@ module.exports = app => {
                 let expireTime = moment(new Date()).add(5, 'days').format('YYYY-MM-DD HH:mm:ss');
                 let result1 = await app.mysql.delete('dgn_access_token', {userid: result[0].userid ,appid:data.appid});
                 result1 = await app.mysql.insert('dgn_access_token', { UserID: result[0].userid, AppID: data.appid, AccessToken: accessToken, ExpireTime: expireTime, wx_unionid: data.loginid, wx_session_key: data.sessionkey });
-                return { returnCode: 0, result: 'success', resultDescribe: '登录成功', accessToken: accessToken, userID: result.userid };
+                return { returnCode: 0, result: 'success', resultDescribe: '登录成功', accessToken: accessToken, userID: result[0].userid };
             }
             else {
                 return { returnCode: -1, result: 'fail', resultDescribe: '用户名或密码错误' };
