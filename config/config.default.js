@@ -20,7 +20,7 @@ module.exports = appInfo => {
                 bigNumberStrings: true,
                 dateStrings: true,
                 multipleStatements: true,
-                queryFormat:this.queryFormat
+                queryFormat: this.queryFormat
             },
             // load into app, default is open
             app: true,
@@ -39,42 +39,49 @@ module.exports = appInfo => {
         },
         "iData": {
             exportsPath: './app/public/exports',
-            downloadPath: 'public/exports',
+            upoladPath:'./app/public/upload',
+            downloadPath: 'public/temp',
+            tempPath: './app/public/temp',
             wxXCX: {
                 Appid: 'wx867b09a45b9d69f9',
                 AppSecret: '5c5d388e6f871badcb6aaad954cafaa1'
             }
         },
+        "multipart": {
+            fileExtensions: [
+                '.apk',
+            ],
+        }
     };
-    
+
     return config;
 };
 
 
 function queryFormat(query, values) {
-        if (!values) return query;
-        let sqlreplace = query.replace(/\{\$req[n]?.(.*?)\}/gi, function (txt, key) {
-            let keyitem = key.split('.');
-            if (keyitem.length > 1)   //SQL中有类似于{$req.filter.goodname} 这样形式的变量。 filter为传入的参数名，goodsname为filter参数中的项目 要求filter是{}
-            {
-                if (Object.prototype.hasOwnProperty.call(values, keyitem[0]) && !this.ctx.helper.ifNull(values[keyitem[0]])) {
-                    let keyjson = JSON.parse(values[keyitem[0]]);
-                    return (keyjson[keyitem[1]] ? keyjson[keyitem[1]] : '');
-                }
-                else
-                { return ''; }
+    if (!values) return query;
+    let sqlreplace = query.replace(/\{\$req[n]?.(.*?)\}/gi, function (txt, key) {
+        let keyitem = key.split('.');
+        if (keyitem.length > 1)   //SQL中有类似于{$req.filter.goodname} 这样形式的变量。 filter为传入的参数名，goodsname为filter参数中的项目 要求filter是{}
+        {
+            if (Object.prototype.hasOwnProperty.call(values, keyitem[0]) && !this.ctx.helper.ifNull(values[keyitem[0]])) {
+                let keyjson = JSON.parse(values[keyitem[0]]);
+                return (keyjson[keyitem[1]] ? keyjson[keyitem[1]] : '');
             }
+            else
+            { return ''; }
+        }
 
-            if (Object.prototype.hasOwnProperty.call(values, key)) {
-                if (txt.substr(0, 6) === '{$reqn' && values[key] == '')    // 当变量为{$reqn.}时， 参数值为''就替换为null 方便数据库像数字列无法插入''
-                { return null; }
-                else {
-                    return this.ctx.helper.replaceParam(values[key]);
-                }
+        if (Object.prototype.hasOwnProperty.call(values, key)) {
+            if (txt.substr(0, 6) === '{$reqn' && values[key] == '')    // 当变量为{$reqn.}时， 参数值为''就替换为null 方便数据库像数字列无法插入''
+            { return null; }
+            else {
+                return this.ctx.helper.replaceParam(values[key]);
             }
-            return txt;
-        }.bind(this));
-        console.log('-----------------------------------------------------------------------------------------------------------------------------------------------------');
-        console.log(sqlreplace);
-        return sqlreplace;
-    }
+        }
+        return txt;
+    }.bind(this));
+    console.log('-----------------------------------------------------------------------------------------------------------------------------------------------------');
+    console.log(sqlreplace);
+    return sqlreplace;
+}
