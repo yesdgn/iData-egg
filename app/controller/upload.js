@@ -46,7 +46,15 @@ module.exports = app => {
     }
 
     * writeFile(part) {
-      const filename = app.config.iData.upoladPath + '/' + moment(new Date()).format('YYYY/MM') + '/' + this.ctx.helper.getRand(5) + '-' + part.filename;
+      const pathName = app.config.iData.upoladPath + '/' + moment(new Date()).format('YYYY/MM') + '/';
+      if (fs.existsSync(pathName)) {
+        console.log('已经创建过此更新目录了');
+      } else {
+        fs.mkdirSync(pathName);
+
+        console.log('更新目录已创建成功\n');
+      }
+      const filename = pathName + this.ctx.helper.getRand(5) + '-' + part.filename;
       const stream = fs.createWriteStream(filename);
       part.pipe(stream);
     };
