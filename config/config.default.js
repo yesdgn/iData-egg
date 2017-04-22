@@ -49,7 +49,7 @@ module.exports = appInfo => {
         },
         "multipart": {
             fileExtensions: [
-                '.apk',
+                '.rar',
             ],
         }
     };

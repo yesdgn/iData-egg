@@ -33,8 +33,8 @@ module.exports = app => {
             const result = await app.mysql.beginTransactionScope(async function (conn) {
                 conn.insert = co.wrap(conn.insert);
                 // don't commit or rollback by yourself
-                const userid = this.ctx.helper.getRand(5);
-                const userImages = this.ctx.helper.getRand(5);
+                const userid = this.ctx.helper.getRandom(5);
+                const userImages = this.ctx.helper.getRandom(5);
                 const curTime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const startTime = moment(new Date()).format('YYYY-MM-DD');
                 const endTime = moment(new Date()).add(10, 'years').format('YYYY-MM-DD');

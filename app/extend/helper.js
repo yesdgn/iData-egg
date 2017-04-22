@@ -107,7 +107,7 @@ module.exports = {
         console.log(sqlreplace);
         return sqlreplace;
     },
-    getRand(randlen){
+    getRandom(randlen){
     let n=lodash.now().toString()+this.ctx.helper.generateMixedNum(randlen);
     return  n;
     },
