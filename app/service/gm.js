@@ -7,22 +7,24 @@ const gm = require('gm').subClass({
 });
 module.exports = app => {
     return class GMService extends app.Service {
-        * writeFile(part, pathName, fileName, formData) {
+        * writeFile(part, fileParam) {
+            let fileid = this.ctx.helper.getRandom(5);
+            fileParam.fileID = fileid;
             gm(part)
-                .write(pathName + fileName, function (err) {
+                .write(fileParam.pathName + fileParam.fileName, function (err) {
                     if (!err) {
-                        if (formData.thumbSize) {
-                            gm(pathName + fileName)
+                        if (fileParam.formData.thumbSize) {
+                            gm(fileParam.pathName + fileParam.fileName)
                                 .size(function (err, size) {
-                                    const newSize = formData.thumbSize;
+                                    const newSize = fileParam.formData.thumbSize;
                                     const maxwh = size.width > size.height ? size.width : size.height;
                                     const r = maxwh / newSize;
                                     const newWidth = size.width / r;
                                     const newHeight = size.height / r;
-                                    gm(pathName + fileName) //缩略图
+                                    gm(fileParam.pathName + fileParam.fileName) //缩略图
                                         .resize(newWidth, newHeight)
                                         .noProfile()
-                                        .write(pathName + '/t_' + fileName, function (err) {
+                                        .write(fileParam.pathName + '/t_' + fileParam.fileName, function (err) {
                                             if (err) {
                                                 throw new Error(JSON.stringify(returnInfo.upload.e5002))
                                                 return;
@@ -31,13 +33,13 @@ module.exports = app => {
 
                                 })
                         }
-                        if (formData.watermark) {
-                            gm(pathName + fileName)
+                        if (fileParam.formData.watermark) {
+                            gm(fileParam.pathName + fileParam.fileName)
                                 .size(function (err, size) {
-                                    gm(pathName + fileName)
+                                    gm(fileParam.pathName + fileParam.fileName)
                                         .font("simsun", 12)
-                                        .drawText(size.width - 235, size.height - 50, formData.watermark)
-                                        .write(pathName + '/w_' + fileName, function (err) {
+                                        .drawText(size.width - 235, size.height - 50, fileParam.formData.watermark)
+                                        .write(fileParam.pathName + '/w_' + fileParam.fileName, function (err) {
                                             if (err) {
                                                 throw new Error(JSON.stringify(returnInfo.upload.e5002))
                                                 return;
@@ -47,9 +49,25 @@ module.exports = app => {
                         }
                     }
                 });
+
+            const sourceFileName=fileParam.fileName;
+            yield this.ctx.service.upload.upload2fileDB(fileParam);
+            if (fileParam.formData.thumbSize) {
+                fileParam.otherFileName = 't_' + sourceFileName;
+                fileParam.ImageType = 2;
+                yield this.ctx.service.upload.upload2imgDB(fileParam);
+            }
+            if (fileParam.formData.watermark) {
+                fileParam.otherFileName = 'w_' + sourceFileName;
+                fileParam.ImageType = 3;
+                yield this.ctx.service.upload.upload2imgDB(fileParam);
+            }
         }
+
 
 
     }
 
+
 };
+

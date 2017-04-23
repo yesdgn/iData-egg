@@ -13,17 +13,21 @@ module.exports = app => {
       const parts = this.ctx.multipart();
       let formData = {};
       let pathName;
+      let dbPathName;
       let part;
-      pathName = app.config.iData.upoladPath + '/' + moment(new Date()).format('YYYY');
+      dbPathName = moment(new Date()).format('YYYYMM');
+      pathName = app.config.iData.upoladPath + '/' + dbPathName;
       if (fs.existsSync(pathName)) {
       } else {
         fs.mkdirSync(pathName);
       }
-      pathName = pathName + '/' + moment(new Date()).format('MM') + '/';
+      dbPathName = dbPathName + '/' + moment(new Date()).format('DD') + '/';
+      pathName = app.config.iData.upoladPath + '/' + dbPathName  
       if (fs.existsSync(pathName)) {
       } else {
         fs.mkdirSync(pathName);
       }
+
 
       while ((part = yield parts) != null) {
         if (part.length) {
@@ -52,8 +56,15 @@ module.exports = app => {
             const filename = this.ctx.helper.getRandom(5) + '-' + part.filename;
             //  const stream = fs.createWriteStream(pathName + filename);
             //  part.pipe(stream);
-
-            yield this.ctx.service.gm.writeFile(part, pathName, filename, formData);
+            let fileParam = {
+              pathName: pathName,
+              fileName: filename,
+              formData: formData,
+              dbPathName: dbPathName,
+              oldFileName: part.filename,
+              fileType: part.mimeType
+            }
+            yield this.ctx.service.gm.writeFile(part, fileParam);
           } catch (err) {
             // 必须将上传的文件流消费掉，要不然浏览器响应会卡死
             yield sendToWormhole(part);
