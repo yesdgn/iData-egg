@@ -22,7 +22,7 @@ module.exports = app => {
         fs.mkdirSync(pathName);
       }
       dbPathName = dbPathName + '/' + moment(new Date()).format('DD') + '/';
-      pathName = app.config.iData.upoladPath + '/' + dbPathName  
+      pathName = app.config.iData.upoladPath + '/' + dbPathName
       if (fs.existsSync(pathName)) {
       } else {
         fs.mkdirSync(pathName);
@@ -54,17 +54,26 @@ module.exports = app => {
           try {
 
             const filename = this.ctx.helper.getRandom(5) + '-' + part.filename;
-            //  const stream = fs.createWriteStream(pathName + filename);
-            //  part.pipe(stream);
+            const fileid = this.ctx.helper.getRandom(5);
+
             let fileParam = {
               pathName: pathName,
               fileName: filename,
               formData: formData,
               dbPathName: dbPathName,
               oldFileName: part.filename,
-              fileType: part.mimeType
+              fileType: part.mimeType,
+              fileID : fileid
             }
-            yield this.ctx.service.gm.writeFile(part, fileParam);
+            const mimeType = ['image/jpeg', 'image/png'];
+            if (mimeType.includes(part.mimeType)) {
+              yield this.ctx.service.gm.writeFile(part, fileParam);
+            }
+            else {
+              const stream = fs.createWriteStream(pathName + filename);
+              part.pipe(stream);
+              yield this.ctx.service.upload.upload2fileDB(fileParam);
+            }
           } catch (err) {
             // 必须将上传的文件流消费掉，要不然浏览器响应会卡死
             yield sendToWormhole(part);

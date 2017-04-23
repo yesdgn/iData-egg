@@ -8,10 +8,9 @@ const gm = require('gm').subClass({
 module.exports = app => {
     return class GMService extends app.Service {
         * writeFile(part, fileParam) {
-            let fileid = this.ctx.helper.getRandom(5);
-            fileParam.fileID = fileid;
             gm(part)
                 .write(fileParam.pathName + fileParam.fileName, function (err) {
+                    console.log(err);
                     if (!err) {
                         if (fileParam.formData.thumbSize) {
                             gm(fileParam.pathName + fileParam.fileName)
@@ -49,7 +48,7 @@ module.exports = app => {
                         }
                     }
                 });
-
+            console.log(fileParam);
             const sourceFileName=fileParam.fileName;
             yield this.ctx.service.upload.upload2fileDB(fileParam);
             if (fileParam.formData.thumbSize) {
